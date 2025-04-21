@@ -1,22 +1,32 @@
 import streamlit as st
-import pandas as pd
 import numpy as np
+import joblib
 
-# Page title
-st.set_page_config(page_title="Online Gaming Behavior", layout="wide")
-st.title("🎮 Online Gaming Behavior Dashboard")
+# Load the model and scaler
+model = joblib.load("engagement_model.pkl")
+scaler = joblib.load("scaler.pkl")
 
-# Load your data
-@st.cache_data
-def load_data():
-    return pd.read_csv("gaming_data.csv")  # Replace with your actual CSV file if you extract from notebook
+# Streamlit UI
+st.title("🎮 Online Gaming Engagement Level Predictor")
+st.write("Provide the player data below to predict their engagement level:")
 
-data = load_data()
+# Correct feature names from your dataset
+feature_names = [
+    'Age', 'Gender', 'Time_Spent_Playing', 'Frequency_of_Purchase',
+    'Favorite_Game_Genre', 'Hours_Watched', 'In_Game_Purchases',
+    'Communication_Tool_Usage', 'Skill_Level'
+]
 
-# Display raw data
-if st.checkbox("Show Raw Data"):
-    st.write(data.head())
+# Collect user inputs
+user_inputs = []
+for feature in feature_names:
+    value = st.number_input(f"{feature}", value=0.0, step=1.0)
+    user_inputs.append(value)
 
-# Sample visual
-st.subheader("Distribution of Game Duration")
-st.bar_chart(data['game_duration'])  # Replace with actual column name from your data
+# Prediction
+if st.button("Predict Engagement Level"):
+    input_array = np.array(user_inputs).reshape(1, -1)
+    input_scaled = scaler.transform(input_array)
+    prediction = model.predict(input_scaled)[0]
+
+    st.success(f"🎯 Predicted Engagement Level: **{prediction}**")
