@@ -78,10 +78,10 @@ input_data = np.array([[
     genre_strategy
 ]])
 
-# Predict button
 if st.button("Predict Engagement Level"):
     scaled_input = scaler.transform(input_data)
-    prediction = model.predict(scaled_input)[0]
+    prediction = model.predict(scaled_input)
+    prediction_value = int(prediction.item())  
 
     engagement_labels = {1: "Low", 2: "Medium", 3: "High"}
-    st.success(f"🎯 Predicted Engagement Level: **{engagement_labels.get(prediction, 'Unknown')}**")
+    st.success(f"🎯 Predicted Engagement Level: **{engagement_labels.get(prediction_value, 'Unknown')}**")
