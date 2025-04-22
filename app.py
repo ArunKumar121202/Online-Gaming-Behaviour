@@ -2,9 +2,7 @@ import streamlit as st
 
 # Dummy user credentials (you can replace or secure these later)
 USER_CREDENTIALS = {
-    "admin": "password123",
-    "player1": "gaming2024",
-    "testuser": "1234"
+    "Arun": "Loginpage@123"
 }
 
 # Login function
