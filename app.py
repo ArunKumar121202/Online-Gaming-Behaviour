@@ -10,21 +10,24 @@ scaler = joblib.load("scaler.pkl")
 st.title("🎮 Online Gaming Engagement Level Predictor")
 st.write("Fill out the player's details to predict their engagement level:")
 
-# Input: Age within dataset range
-age = st.number_input("Age", min_value=15, max_value=49, step=1) 
+# Input: Age
+age = st.number_input("Age", min_value=15, max_value=49, step=1)
 
 # Input: Gender
-gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+gender = st.selectbox("Gender", ["Male", "Female"])
 
-# Input: Favorite Game Genre
+# Input: Location
+location = st.selectbox("Player Location", ["Europe", "Other", "USA"])
+
+# Input: Game Genre
 game_genre = st.selectbox("Favorite Game Genre", [
     "Action", "Adventure", "Puzzle", "RPG", "Simulation", "Sports", "Strategy", "Other"
 ])
 
-# Input: Average Play Time
+# Input: Play Time
 play_time = st.number_input("Average Play Time (Hours)", min_value=0.0, step=0.5)
 
-# ✅ Binary input for In-Game Purchases
+# Input: In-Game Purchases
 in_game_purchases = st.radio("In-Game Purchases", ["No", "Yes"])
 in_game_purchases = 1 if in_game_purchases == "Yes" else 0
 
@@ -38,29 +41,47 @@ player_level = st.number_input("Player Level", min_value=0, step=1)
 achievements = st.number_input("Achievements Unlocked", min_value=0, step=1)
 
 # Encoding categorical variables
-gender_map = {"Male": 0, "Female": 1, "Other": 2}
-genre_map = {
-    'Action': 0, 'Adventure': 1, 'Puzzle': 2, 'RPG': 3,
-    'Simulation': 4, 'Sports': 5, 'Strategy': 6, 'Other': 7
-}
-difficulty_map = {"Easy": 0, "Medium": 1, "Hard": 2}
+gender_encoded = 0 if gender == "Male" else 1
 
-# Create input array
-input_data = np.array([
+# Game difficulty encoding
+difficulty_map = {'Easy': 1, 'Medium': 2, 'Hard': 3}
+game_difficulty_encoded = difficulty_map[game_difficulty]
+
+# Location encoding (one-hot)
+location_europe = 1 if location == "Europe" else 0
+location_other = 1 if location == "Other" else 0
+location_usa = 1 if location == "USA" else 0
+
+# Genre encoding (one-hot)
+genre_rpg = 1 if game_genre == "RPG" else 0
+genre_simulation = 1 if game_genre == "Simulation" else 0
+genre_sports = 1 if game_genre == "Sports" else 0
+genre_strategy = 1 if game_genre == "Strategy" else 0
+
+# Final input in order of model features
+input_data = np.array([[
     age,
-    gender_map[gender],
-    genre_map[game_genre],
+    gender_encoded,
     play_time,
     in_game_purchases,
-    difficulty_map[game_difficulty],
+    game_difficulty_encoded,
     sessions_per_week,
     avg_session_duration,
     player_level,
-    achievements
-]).reshape(1, -1)
+    achievements,
+    location_europe,
+    location_other,
+    location_usa,
+    genre_rpg,
+    genre_simulation,
+    genre_sports,
+    genre_strategy
+]])
 
 # Predict button
 if st.button("Predict Engagement Level"):
     scaled_input = scaler.transform(input_data)
     prediction = model.predict(scaled_input)[0]
-    st.success(f"🎯 Predicted Engagement Level: **{prediction}**")
+
+    engagement_labels = {1: "Low", 2: "Medium", 3: "High"}
+    st.success(f"🎯 Predicted Engagement Level: **{engagement_labels.get(prediction, 'Unknown')}**")
