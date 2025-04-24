@@ -1,7 +1,15 @@
 import streamlit as st
 st.markdown(
     """
-    <div style="background-color:#0d47a1; padding:20px; border-radius:10px; color:white">
+    <style>
+    body {
+        background-color: #0d47a1;
+        color: white;
+    }
+    .stApp {
+        background-color: #0d47a1;
+    }
+    </style>
     """,
     unsafe_allow_html=True
 )
