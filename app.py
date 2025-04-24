@@ -1,5 +1,10 @@
 import streamlit as st
-
+st.markdown(
+    """
+    <div style="background-color:#0d47a1; padding:20px; border-radius:10px; color:white">
+    """,
+    unsafe_allow_html=True
+)
 # Dummy user credentials (you can replace or secure these later)
 USER_CREDENTIALS = {
     "Arun": "Loginpage@123"
@@ -77,3 +82,4 @@ else:
         prediction_value = int(prediction.item())
         engagement_labels = {1: "Low", 2: "Medium", 3: "High"}
         st.success(f"🎯 Predicted Engagement Level: **{engagement_labels.get(prediction_value, 'Unknown')}**")
+st.markdown("</div>", unsafe_allow_html=True)
