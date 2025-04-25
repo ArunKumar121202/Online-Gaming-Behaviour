@@ -1,6 +1,5 @@
 import streamlit as st
 
-# Apply custom CSS for better visibility
 st.markdown(
     """
     <style>
@@ -33,7 +32,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-# Dummy user credentials (you can replace or secure these later)
 USER_CREDENTIALS = {
     "Arun": "Loginpage@123"
 }
@@ -54,7 +52,6 @@ def login():
         else:
             st.error("Invalid username or password")
 
-# Check login state
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
