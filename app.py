@@ -1,64 +1,50 @@
 import streamlit as st
+import numpy as np
+import joblib
+
+st.set_page_config(page_title="Engagement Predictor", layout="centered")
 
 st.markdown(
     """
     <style>
-    body {
-        background-color: #0d47a1;
-        color: white;
-    }
     .stApp {
         background-color: #0d47a1;
         color: white;
     }
-    .stTextInput > div > input,
+    label, div, p, h1, h2, h3, h4, h5, h6 {
+        color: white !important;
+    }
+    .stTextInput input,
     .stNumberInput input,
-    .stSelectbox div,
-    .stRadio div {
-        background-color: #e3f2fd;
-        color: black;
+    .stSelectbox div[role="button"],
+    .stRadio label {
+        background-color: #1565c0 !important;
+        color: white !important;
+        border-radius: 8px;
     }
     .stButton button {
-        background-color: #ffffff;
-        color: #0d47a1;
-        border: 2px solid #f44336;
-        border-radius: 8px;
+        background-color: #ffffff !important;
+        color: #0d47a1 !important;
         font-weight: bold;
+        border-radius: 8px;
+        border: 2px solid #f44336;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-USER_CREDENTIALS = {
-    "Arun": "Loginpage@123"
-}
+USER_CREDENTIALS = {"Arun": "Loginpage@123"}
 
 def login():
     st.title("🔐 Login to Access the Predictor")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
-    login_button = st.button("Login")
-    if login_button:
-        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
+    if st.button("Login"):
+        if USER_CREDENTIALS.get(username) == password:
             st.session_state["logged_in"] = True
             st.session_state["username"] = username
-            st.markdown(
-                f"""
-                <div style='
-                    background-color: #81c784;
-                    color: black;
-                    padding: 0.8rem;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    margin-top: 10px;
-                    text-align: center;
-                '>
-                    ✅ Welcome, {username}!
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            st.success(f"Welcome, {username}!")
         else:
             st.error("Invalid username or password")
 
@@ -68,14 +54,11 @@ if "logged_in" not in st.session_state:
 if not st.session_state["logged_in"]:
     login()
 else:
-    import numpy as np
-    import joblib
-
     model = joblib.load("engagement_model.pkl")
     scaler = joblib.load("scaler.pkl")
 
     st.title("🎮 Online Gaming Engagement Level Predictor")
-    st.write(f"Welcome, **{st.session_state['username']}**! Fill out the player's details to predict their engagement level:")
+    st.write(f"Welcome, **{st.session_state['username']}**! Fill in the player details:")
 
     age = st.number_input("Age", min_value=15, max_value=49, step=1)
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -85,7 +68,6 @@ else:
     ])
     play_time = st.number_input("Average Play Time (Hours)", min_value=0.0, step=0.5)
     in_game_purchases = st.radio("In-Game Purchases", ["No", "Yes"])
-    in_game_purchases = 1 if in_game_purchases == "Yes" else 0
     game_difficulty = st.selectbox("Game Difficulty", ["Easy", "Medium", "Hard"])
     sessions_per_week = st.number_input("Sessions per Week", min_value=0, step=1)
     avg_session_duration = st.number_input("Avg. Session Duration (minutes)", min_value=0, step=1)
@@ -102,6 +84,7 @@ else:
     genre_simulation = 1 if game_genre == "Simulation" else 0
     genre_sports = 1 if game_genre == "Sports" else 0
     genre_strategy = 1 if game_genre == "Strategy" else 0
+    in_game_purchases = 1 if in_game_purchases == "Yes" else 0
 
     input_data = np.array([[
         age, gender_encoded, play_time, in_game_purchases, game_difficulty_encoded,
@@ -113,9 +96,8 @@ else:
     if st.button("Predict Engagement Level"):
         scaled_input = scaler.transform(input_data)
         prediction = model.predict(scaled_input)
-        prediction_value = int(prediction.item())
         engagement_labels = {1: "Low", 2: "Medium", 3: "High"}
-        predicted_text = engagement_labels.get(prediction_value, "Unknown")
+        predicted_text = engagement_labels.get(int(prediction[0]), "Unknown")
         st.markdown(
             f"""
             <div style='
@@ -133,5 +115,3 @@ else:
             """,
             unsafe_allow_html=True
         )
-
-st.markdown("</div>", unsafe_allow_html=True)
