@@ -1,6 +1,5 @@
 import streamlit as st
 
-# Apply custom CSS for better visibility
 st.markdown(
     """
     <style>
@@ -12,56 +11,63 @@ st.markdown(
         background-color: #0d47a1;
         color: white;
     }
-    .stTextInput label, .stNumberInput label, .stSelectbox label, .stRadio label, .st-bb, .st-cb {
-        color: white !important;
+    .stTextInput > div > input,
+    .stNumberInput input,
+    .stSelectbox div,
+    .stRadio div {
+        background-color: #e3f2fd;
+        color: black;
     }
-    .css-1cpxqw2 edgvbvh3, .css-10trblm {
-        color: white !important;
-    }
-    .stButton>button {
-        background-color: white !important;
-        color: #0d47a1 !important;
+    .stButton button {
+        background-color: #ffffff;
+        color: #0d47a1;
+        border: 2px solid #f44336;
+        border-radius: 8px;
         font-weight: bold;
-    }
-    .welcome-text {
-        color: #ffeb3b;
-        font-weight: bold;
-        font-size: 18px;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Dummy user credentials (you can replace or secure these later)
 USER_CREDENTIALS = {
     "Arun": "Loginpage@123"
 }
 
-# Login function
 def login():
     st.title("🔐 Login to Access the Predictor")
-
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     login_button = st.button("Login")
-
     if login_button:
         if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
             st.session_state["logged_in"] = True
             st.session_state["username"] = username
-            st.markdown(f'<p class="welcome-text">✅ Welcome, {username}!</p>', unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div style='
+                    background-color: #81c784;
+                    color: black;
+                    padding: 0.8rem;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    margin-top: 10px;
+                    text-align: center;
+                '>
+                    ✅ Welcome, {username}!
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
         else:
             st.error("Invalid username or password")
 
-# Check login state
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if not st.session_state["logged_in"]:
     login()
 else:
-    # Your main predictor app goes here
     import numpy as np
     import joblib
 
@@ -69,7 +75,7 @@ else:
     scaler = joblib.load("scaler.pkl")
 
     st.title("🎮 Online Gaming Engagement Level Predictor")
-    st.markdown(f'<p class="welcome-text">🎉 Hello, {st.session_state["username"]}! Fill out the player\'s details below:</p>', unsafe_allow_html=True)
+    st.write(f"Welcome, **{st.session_state['username']}**! Fill out the player's details to predict their engagement level:")
 
     age = st.number_input("Age", min_value=15, max_value=49, step=1)
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -109,6 +115,23 @@ else:
         prediction = model.predict(scaled_input)
         prediction_value = int(prediction.item())
         engagement_labels = {1: "Low", 2: "Medium", 3: "High"}
-        st.success(f"🎯 Predicted Engagement Level: **{engagement_labels.get(prediction_value, 'Unknown')}**")
+        predicted_text = engagement_labels.get(prediction_value, "Unknown")
+        st.markdown(
+            f"""
+            <div style='
+                background-color: #ffeb3b;
+                color: #0d47a1;
+                padding: 1rem;
+                border-radius: 10px;
+                font-weight: bold;
+                font-size: 18px;
+                margin-top: 20px;
+                text-align: center;
+            '>
+                🎯 Predicted Engagement Level: {predicted_text}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 st.markdown("</div>", unsafe_allow_html=True)
