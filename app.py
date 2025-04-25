@@ -1,64 +1,75 @@
 import streamlit as st
-import numpy as np
-import joblib
 
-st.set_page_config(page_title="Engagement Predictor", layout="centered")
-
+# Apply custom CSS for better visibility
 st.markdown(
     """
     <style>
+    body {
+        background-color: #0d47a1;
+        color: white;
+    }
     .stApp {
         background-color: #0d47a1;
         color: white;
     }
-    label, div, p, h1, h2, h3, h4, h5, h6 {
+    .stTextInput label, .stNumberInput label, .stSelectbox label, .stRadio label, .st-bb, .st-cb {
         color: white !important;
     }
-    .stTextInput input,
-    .stNumberInput input,
-    .stSelectbox div[role="button"],
-    .stRadio label {
-        background-color: #1565c0 !important;
+    .css-1cpxqw2 edgvbvh3, .css-10trblm {
         color: white !important;
-        border-radius: 8px;
     }
-    .stButton button {
-        background-color: #ffffff !important;
+    .stButton>button {
+        background-color: white !important;
         color: #0d47a1 !important;
         font-weight: bold;
-        border-radius: 8px;
-        border: 2px solid #f44336;
+    }
+    .welcome-text {
+        color: #ffeb3b;
+        font-weight: bold;
+        font-size: 18px;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-USER_CREDENTIALS = {"Arun": "Loginpage@123"}
+# Dummy user credentials (you can replace or secure these later)
+USER_CREDENTIALS = {
+    "Arun": "Loginpage@123"
+}
 
+# Login function
 def login():
     st.title("🔐 Login to Access the Predictor")
+
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if USER_CREDENTIALS.get(username) == password:
+    login_button = st.button("Login")
+
+    if login_button:
+        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
             st.session_state["logged_in"] = True
             st.session_state["username"] = username
-            st.success(f"Welcome, {username}!")
+            st.markdown(f'<p class="welcome-text">✅ Welcome, {username}!</p>', unsafe_allow_html=True)
         else:
             st.error("Invalid username or password")
 
+# Check login state
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
 if not st.session_state["logged_in"]:
     login()
 else:
+    # Your main predictor app goes here
+    import numpy as np
+    import joblib
+
     model = joblib.load("engagement_model.pkl")
     scaler = joblib.load("scaler.pkl")
 
     st.title("🎮 Online Gaming Engagement Level Predictor")
-    st.write(f"Welcome, **{st.session_state['username']}**! Fill in the player details:")
+    st.markdown(f'<p class="welcome-text">🎉 Hello, {st.session_state["username"]}! Fill out the player\'s details below:</p>', unsafe_allow_html=True)
 
     age = st.number_input("Age", min_value=15, max_value=49, step=1)
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -68,6 +79,7 @@ else:
     ])
     play_time = st.number_input("Average Play Time (Hours)", min_value=0.0, step=0.5)
     in_game_purchases = st.radio("In-Game Purchases", ["No", "Yes"])
+    in_game_purchases = 1 if in_game_purchases == "Yes" else 0
     game_difficulty = st.selectbox("Game Difficulty", ["Easy", "Medium", "Hard"])
     sessions_per_week = st.number_input("Sessions per Week", min_value=0, step=1)
     avg_session_duration = st.number_input("Avg. Session Duration (minutes)", min_value=0, step=1)
@@ -84,7 +96,6 @@ else:
     genre_simulation = 1 if game_genre == "Simulation" else 0
     genre_sports = 1 if game_genre == "Sports" else 0
     genre_strategy = 1 if game_genre == "Strategy" else 0
-    in_game_purchases = 1 if in_game_purchases == "Yes" else 0
 
     input_data = np.array([[
         age, gender_encoded, play_time, in_game_purchases, game_difficulty_encoded,
@@ -96,22 +107,8 @@ else:
     if st.button("Predict Engagement Level"):
         scaled_input = scaler.transform(input_data)
         prediction = model.predict(scaled_input)
+        prediction_value = int(prediction.item())
         engagement_labels = {1: "Low", 2: "Medium", 3: "High"}
-        predicted_text = engagement_labels.get(int(prediction[0]), "Unknown")
-        st.markdown(
-            f"""
-            <div style='
-                background-color: #ffeb3b;
-                color: #0d47a1;
-                padding: 1rem;
-                border-radius: 10px;
-                font-weight: bold;
-                font-size: 18px;
-                margin-top: 20px;
-                text-align: center;
-            '>
-                🎯 Predicted Engagement Level: {predicted_text}
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        st.success(f"🎯 Predicted Engagement Level: **{engagement_labels.get(prediction_value, 'Unknown')}**")
+
+st.markdown("</div>", unsafe_allow_html=True)
