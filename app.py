@@ -145,7 +145,7 @@ else:
 
         st.subheader("2️⃣ Gameplay Behavior")
         fig, ax = plt.subplots(1,2, figsize=(16,6))
-        sns.histplot(df['Play_Time_Hours'], kde=True, color='lightgreen', ax=ax[0])
+        sns.histplot(df['Play TimeHours'], kde=True, color='lightgreen', ax=ax[0])
         ax[0].set_title("Play Time Distribution")
         sns.countplot(data=df, x='Game_Difficulty', palette='muted', ax=ax[1])
         ax[1].set_title("Game Difficulty Levels")
