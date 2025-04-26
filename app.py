@@ -5,8 +5,13 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Load your dataset
+df = pd.read_csv(r"C:\Users\AbhiArun\OneDrive\Desktop\Data Science\Internship Program\Internship Project-4\KS_Arun_Kumar_Gaming_Industry_Datasets\Dataset1\online_gaming_behavior_dataset.csv")
+
+# Streamlit page settings
 st.set_page_config(page_title="Gaming Engagement Predictor & Analysis", layout="wide")
 
+# Custom CSS
 st.markdown(
     """
     <style>
@@ -20,8 +25,10 @@ st.markdown(
     unsafe_allow_html=True
 )
 
+# Login credentials
 USER_CREDENTIALS = {"Arun": "Loginpage@123"}
 
+# Login function
 def login():
     st.title("🔐 Login to Access the App")
     username = st.text_input("Username")
@@ -35,9 +42,11 @@ def login():
         else:
             st.error("Invalid username or password")
 
+# Check login
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
+# App Flow
 if not st.session_state["logged_in"]:
     login()
 else:
@@ -87,81 +96,108 @@ else:
 
     elif menu == "Analyze Dataset":
         st.title("📊 Online Gaming Behavior Dataset Analysis")
-        uploaded_file = st.file_uploader("Upload your dataset CSV", type=["csv"])
 
-        if uploaded_file is not None:
-            df = pd.read_csv(uploaded_file)
+        st.sidebar.subheader("Choose Analysis Section")
+        analysis_section = st.sidebar.radio(
+            "Select Section",
+            [
+                "Player Demographics",
+                "Gameplay Behavior",
+                "Player Engagement",
+                "Purchase Behavior",
+                "Player Level & Progression",
+                "Location-Based Insights"
+            ]
+        )
 
-            st.subheader("Dataset Preview")
-            st.dataframe(df.head())
+        if analysis_section == "Player Demographics":
+            st.header("👤 Player Demographics Analysis")
+            total_players = df.shape[0]
+            avg_age = round(df['Age'].mean(), 2)
+            gender_counts = df['Gender'].value_counts()
+            gender_ratio = f"{gender_counts.get('Male',0)}M : {gender_counts.get('Female',0)}F"
 
-            st.subheader("Basic Statistics")
-            st.dataframe(df.describe())
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Total Players", total_players)
+            col2.metric("Average Age", avg_age)
+            col3.metric("Gender Ratio", gender_ratio)
 
-            st.subheader("Missing Values")
-            st.dataframe(df.isnull().sum())
-
-            st.subheader("Correlation Matrix")
-            fig, ax = plt.subplots(figsize=(10, 6))
-            corr = df.corr(numeric_only=True)
-            im = ax.imshow(corr, cmap="coolwarm")
-            ax.set_xticks(np.arange(len(corr.columns)))
-            ax.set_yticks(np.arange(len(corr.columns)))
-            ax.set_xticklabels(corr.columns, rotation=45, ha="right")
-            ax.set_yticklabels(corr.columns)
-            fig.colorbar(im)
+            st.subheader("Age Distribution")
+            fig, ax = plt.subplots()
+            sns.histplot(df['Age'], kde=True, color='skyblue', ax=ax)
             st.pyplot(fig)
 
-            # Side-by-side charts
+            st.subheader("Gender Distribution")
+            fig, ax = plt.subplots()
+            sns.countplot(data=df, x='Gender', palette='Set2', ax=ax)
+            st.pyplot(fig)
+
+        elif analysis_section == "Gameplay Behavior":
+            st.header("🎮 Gameplay Behavior Analysis")
+            avg_play_time = round(df['Play_Time_Hours'].mean(), 2)
+            avg_sessions = round(df['Sessions_per_Week'].mean(), 2)
+            avg_duration = round(df['Avg_Session_Duration_mins'].mean(), 2)
+
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Avg Play Time (Hours)", avg_play_time)
+            col2.metric("Sessions/Week", avg_sessions)
+            col3.metric("Avg Session Duration (mins)", avg_duration)
+
+            st.subheader("Game Difficulty Distribution")
+            fig, ax = plt.subplots()
+            sns.countplot(data=df, x='Game_Difficulty', palette='pastel', ax=ax)
+            st.pyplot(fig)
+
+        elif analysis_section == "Player Engagement":
+            st.header("🎯 Player Engagement Analysis")
+            engagement_counts = df['Engagement_Level'].value_counts()
+            avg_achievements = round(df['Achievements_Unlocked'].mean(), 2)
+
             col1, col2 = st.columns(2)
+            col1.metric("Most Common Engagement", engagement_counts.idxmax())
+            col2.metric("Avg Achievements Unlocked", avg_achievements)
 
-            with col1:
-                st.markdown("#### 🎮 Engagement Level Distribution")
-                if 'Engagement_Level' in df.columns:
-                    fig, ax = plt.subplots()
-                    order = df['Engagement_Level'].value_counts().index
-                    sns.countplot(data=df, x='Engagement_Level', order=order, palette='Blues', ax=ax)
-                    for p in ax.patches:
-                        ax.annotate(f"{p.get_height()}", (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                    ha='center', va='center', fontsize=10, color='black', xytext=(0, 8),
-                                    textcoords='offset points')
-                    ax.set_ylabel("Count")
-                    st.pyplot(fig)
+            st.subheader("Engagement Level Distribution")
+            fig, ax = plt.subplots()
+            sns.countplot(data=df, x='Engagement_Level', order=sorted(df['Engagement_Level'].unique()), palette='Blues', ax=ax)
+            st.pyplot(fig)
 
-            with col2:
-                st.markdown("#### 👤 Gender Distribution")
-                if 'Gender' in df.columns:
-                    fig, ax = plt.subplots()
-                    sns.countplot(data=df, x='Gender', palette='Set2', ax=ax)
-                    for p in ax.patches:
-                        ax.annotate(f"{p.get_height()}", (p.get_x() + p.get_width() / 2., p.get_height()), 
-                                    ha='center', va='center', fontsize=10, color='black', xytext=(0, 8),
-                                    textcoords='offset points')
-                    ax.set_ylabel("Count")
-                    st.pyplot(fig)
+        elif analysis_section == "Purchase Behavior":
+            st.header("🛒 Purchase Behavior Analysis")
+            purchase_counts = df['In_Game_Purchases'].value_counts()
 
-            col3, col4 = st.columns(2)
+            col1, col2 = st.columns(2)
+            col1.metric("Players with Purchases", purchase_counts.get('Yes',0))
+            col2.metric("Players without Purchases", purchase_counts.get('No',0))
 
-            with col3:
-                st.markdown("#### 🕹️ Favorite Game Genre")
-                if 'Game_Genre' in df.columns:
-                    genre_counts = df['Game_Genre'].value_counts()
-                    fig, ax = plt.subplots()
-                    genre_counts.plot(kind='bar', color='mediumseagreen', edgecolor='black', ax=ax)
-                    for i, v in enumerate(genre_counts):
-                        ax.text(i, v + 1, str(v), ha='center')
-                    ax.set_xlabel("Game Genre")
-                    ax.set_ylabel("Count")
-                    st.pyplot(fig)
+            st.subheader("In-Game Purchases Distribution")
+            fig, ax = plt.subplots()
+            sns.countplot(data=df, x='In_Game_Purchases', palette='cool', ax=ax)
+            st.pyplot(fig)
 
-            with col4:
-                st.markdown("#### 🌍 Player Location")
-                if 'Location' in df.columns:
-                    location_counts = df['Location'].value_counts()
-                    fig, ax = plt.subplots()
-                    ax.pie(location_counts, labels=location_counts.index, autopct='%1.1f%%', startangle=140, colors=sns.color_palette("pastel"))
-                    ax.axis('equal')
-                    st.pyplot(fig)
+        elif analysis_section == "Player Level & Progression":
+            st.header("📈 Player Level & Progression Analysis")
+            avg_player_level = round(df['Player_Level'].mean(), 2)
 
-        else:
-            st.warning("Please upload a CSV file to continue.")
+            col1, col2 = st.columns(2)
+            col1.metric("Average Player Level", avg_player_level)
+            col2.metric("Max Achievements", df['Achievements_Unlocked'].max())
+
+            st.subheader("Player Level Distribution")
+            fig, ax = plt.subplots()
+            sns.histplot(df['Player_Level'], kde=True, color='orange', ax=ax)
+            st.pyplot(fig)
+
+        elif analysis_section == "Location-Based Insights":
+            st.header("🌍 Location Based Insights")
+            location_counts = df['Location'].value_counts()
+
+            col1, col2 = st.columns(2)
+            col1.metric("Top Location", location_counts.idxmax())
+            col2.metric("Players from Top Location", location_counts.max())
+
+            st.subheader("Location Distribution")
+            fig, ax = plt.subplots()
+            ax.pie(location_counts, labels=location_counts.index, autopct='%1.1f%%', startangle=140, colors=sns.color_palette("pastel"))
+            ax.axis('equal')
+            st.pyplot(fig)
