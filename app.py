@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import joblib
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 st.set_page_config(page_title="Gaming Engagement Predictor & Analysis", layout="wide")
 
@@ -103,28 +104,44 @@ else:
             st.subheader("Correlation Matrix")
             fig, ax = plt.subplots(figsize=(10, 6))
             corr = df.corr(numeric_only=True)
-            im = ax.imshow(corr, cmap="coolwarm")
-            ax.set_xticks(np.arange(len(corr.columns)))
-            ax.set_yticks(np.arange(len(corr.columns)))
-            ax.set_xticklabels(corr.columns, rotation=45, ha="right")
-            ax.set_yticklabels(corr.columns)
-            fig.colorbar(im)
+            sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
             st.pyplot(fig)
 
             if 'Engagement_Level' in df.columns:
                 st.subheader("Distribution of Engagement Levels")
                 fig2, ax2 = plt.subplots()
-                df['Engagement_Level'].value_counts().plot(kind='bar', color='teal', ax=ax2)
+                sns.countplot(data=df, x='Engagement_Level', palette='viridis', ax=ax2)
                 ax2.set_xlabel("Engagement Level")
                 ax2.set_ylabel("Count")
                 st.pyplot(fig2)
 
-            st.subheader("Age Distribution")
             if 'Age' in df.columns:
+                st.subheader("Age Distribution")
                 fig3, ax3 = plt.subplots()
-                df['Age'].plot(kind='hist', bins=20, color='orange', edgecolor='black', ax=ax3)
+                sns.histplot(df['Age'], bins=20, kde=True, color='orange', ax=ax3)
                 ax3.set_xlabel("Age")
                 ax3.set_title("Age Distribution")
                 st.pyplot(fig3)
+
+            if 'Gender' in df.columns:
+                st.subheader("Gender Distribution")
+                fig4, ax4 = plt.subplots()
+                sns.countplot(data=df, x='Gender', palette='Set2', ax=ax4)
+                st.pyplot(fig4)
+
+            if 'Game_Genre' in df.columns:
+                st.subheader("Preferred Game Genre")
+                fig5, ax5 = plt.subplots()
+                df['Game_Genre'].value_counts().plot(kind='bar', color='purple', ax=ax5)
+                ax5.set_ylabel("Count")
+                st.pyplot(fig5)
+
+            if 'Location' in df.columns:
+                st.subheader("Player Location")
+                fig6, ax6 = plt.subplots()
+                df['Location'].value_counts().plot(kind='pie', autopct='%1.1f%%', startangle=140, ax=ax6)
+                ax6.set_ylabel("")
+                st.pyplot(fig6)
+
         else:
             st.warning("Please upload a CSV file to continue.")
