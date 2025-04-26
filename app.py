@@ -150,7 +150,7 @@ else:
 
         elif analysis_section == "Player Engagement":
             st.header("🎯 Player Engagement Analysis")
-            engagement_counts = df['Engagement_Level'].value_counts()
+            engagement_counts = df['EngagementLevel'].value_counts()
             avg_achievements = round(df['Achievements_Unlocked'].mean(), 2)
 
             col1, col2 = st.columns(2)
@@ -159,12 +159,12 @@ else:
 
             st.subheader("Engagement Level Distribution")
             fig, ax = plt.subplots()
-            sns.countplot(data=df, x='Engagement_Level', order=sorted(df['Engagement_Level'].unique()), palette='Blues', ax=ax)
+            sns.countplot(data=df, x='EngagementLevel', order=sorted(df['EngagementLevel'].unique()), palette='Blues', ax=ax)
             st.pyplot(fig)
 
         elif analysis_section == "Purchase Behavior":
             st.header("🛒 Purchase Behavior Analysis")
-            purchase_counts = df['In_Game_Purchases'].value_counts()
+            purchase_counts = df['InGamePurchases'].value_counts()
 
             col1, col2 = st.columns(2)
             col1.metric("Players with Purchases", purchase_counts.get('Yes',0))
@@ -172,12 +172,12 @@ else:
 
             st.subheader("In-Game Purchases Distribution")
             fig, ax = plt.subplots()
-            sns.countplot(data=df, x='In_Game_Purchases', palette='cool', ax=ax)
+            sns.countplot(data=df, x='InGamePurchases', palette='cool', ax=ax)
             st.pyplot(fig)
 
         elif analysis_section == "Player Level & Progression":
             st.header("📈 Player Level & Progression Analysis")
-            avg_player_level = round(df['Player_Level'].mean(), 2)
+            avg_player_level = round(df['PlayerLevel'].mean(), 2)
 
             col1, col2 = st.columns(2)
             col1.metric("Average Player Level", avg_player_level)
@@ -185,7 +185,7 @@ else:
 
             st.subheader("Player Level Distribution")
             fig, ax = plt.subplots()
-            sns.histplot(df['Player_Level'], kde=True, color='orange', ax=ax)
+            sns.histplot(df['PlayerLevel'], kde=True, color='orange', ax=ax)
             st.pyplot(fig)
 
         elif analysis_section == "Location-Based Insights":
