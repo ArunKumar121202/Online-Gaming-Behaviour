@@ -15,10 +15,10 @@ st.set_page_config(page_title="Gaming Engagement Predictor & Analysis", layout="
 st.markdown(
     """
     <style>
-    body {background-color: #0d47a1; color: white;}
-    .stApp {background-color: #0d47a1; color: white;}
+    body {background-color: #000000; color: white;}
+    .stApp {background-color: #000000; color: white;}
     .stTextInput label, .stNumberInput label, .stSelectbox label, .stRadio label, .st-bb, .st-cb {color: white !important;}
-    .stButton>button {background-color: white !important; color: #0d47a1 !important; font-weight: bold;}
+    .stButton>button {background-color: white !important; color: black !important; font-weight: bold;}
     .welcome-text {color: #ffeb3b; font-weight: bold; font-size: 18px;}
     </style>
     """,
