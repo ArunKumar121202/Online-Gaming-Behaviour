@@ -104,44 +104,64 @@ else:
             st.subheader("Correlation Matrix")
             fig, ax = plt.subplots(figsize=(10, 6))
             corr = df.corr(numeric_only=True)
-            sns.heatmap(corr, annot=True, cmap="coolwarm", ax=ax)
+            im = ax.imshow(corr, cmap="coolwarm")
+            ax.set_xticks(np.arange(len(corr.columns)))
+            ax.set_yticks(np.arange(len(corr.columns)))
+            ax.set_xticklabels(corr.columns, rotation=45, ha="right")
+            ax.set_yticklabels(corr.columns)
+            fig.colorbar(im)
             st.pyplot(fig)
 
-            if 'Engagement_Level' in df.columns:
-                st.subheader("Distribution of Engagement Levels")
-                fig2, ax2 = plt.subplots()
-                sns.countplot(data=df, x='Engagement_Level', palette='viridis', ax=ax2)
-                ax2.set_xlabel("Engagement Level")
-                ax2.set_ylabel("Count")
-                st.pyplot(fig2)
+            # Side-by-side charts
+            col1, col2 = st.columns(2)
 
-            if 'Age' in df.columns:
-                st.subheader("Age Distribution")
-                fig3, ax3 = plt.subplots()
-                sns.histplot(df['Age'], bins=20, kde=True, color='orange', ax=ax3)
-                ax3.set_xlabel("Age")
-                ax3.set_title("Age Distribution")
-                st.pyplot(fig3)
+            with col1:
+                st.markdown("#### 🎮 Engagement Level Distribution")
+                if 'Engagement_Level' in df.columns:
+                    fig, ax = plt.subplots()
+                    order = df['Engagement_Level'].value_counts().index
+                    sns.countplot(data=df, x='Engagement_Level', order=order, palette='Blues', ax=ax)
+                    for p in ax.patches:
+                        ax.annotate(f"{p.get_height()}", (p.get_x() + p.get_width() / 2., p.get_height()), 
+                                    ha='center', va='center', fontsize=10, color='black', xytext=(0, 8),
+                                    textcoords='offset points')
+                    ax.set_ylabel("Count")
+                    st.pyplot(fig)
 
-            if 'Gender' in df.columns:
-                st.subheader("Gender Distribution")
-                fig4, ax4 = plt.subplots()
-                sns.countplot(data=df, x='Gender', palette='Set2', ax=ax4)
-                st.pyplot(fig4)
+            with col2:
+                st.markdown("#### 👤 Gender Distribution")
+                if 'Gender' in df.columns:
+                    fig, ax = plt.subplots()
+                    sns.countplot(data=df, x='Gender', palette='Set2', ax=ax)
+                    for p in ax.patches:
+                        ax.annotate(f"{p.get_height()}", (p.get_x() + p.get_width() / 2., p.get_height()), 
+                                    ha='center', va='center', fontsize=10, color='black', xytext=(0, 8),
+                                    textcoords='offset points')
+                    ax.set_ylabel("Count")
+                    st.pyplot(fig)
 
-            if 'Game_Genre' in df.columns:
-                st.subheader("Preferred Game Genre")
-                fig5, ax5 = plt.subplots()
-                df['Game_Genre'].value_counts().plot(kind='bar', color='purple', ax=ax5)
-                ax5.set_ylabel("Count")
-                st.pyplot(fig5)
+            col3, col4 = st.columns(2)
 
-            if 'Location' in df.columns:
-                st.subheader("Player Location")
-                fig6, ax6 = plt.subplots()
-                df['Location'].value_counts().plot(kind='pie', autopct='%1.1f%%', startangle=140, ax=ax6)
-                ax6.set_ylabel("")
-                st.pyplot(fig6)
+            with col3:
+                st.markdown("#### 🕹️ Favorite Game Genre")
+                if 'Game_Genre' in df.columns:
+                    genre_counts = df['Game_Genre'].value_counts()
+                    fig, ax = plt.subplots()
+                    genre_counts.plot(kind='bar', color='mediumseagreen', edgecolor='black', ax=ax)
+                    for i, v in enumerate(genre_counts):
+                        ax.text(i, v + 1, str(v), ha='center')
+                    ax.set_xlabel("Game Genre")
+                    ax.set_ylabel("Count")
+                    st.pyplot(fig)
+
+            with col4:
+                st.markdown("#### 🌍 Player Location")
+                if 'Location' in df.columns:
+                    location_counts = df['Location'].value_counts()
+                    fig, ax = plt.subplots()
+                    ax.pie(location_counts, labels=location_counts.index, autopct='%1.1f%%', startangle=140, colors=sns.color_palette("pastel"))
+                    ax.axis('equal')
+                    st.pyplot(fig)
 
         else:
             st.warning("Please upload a CSV file to continue.")
