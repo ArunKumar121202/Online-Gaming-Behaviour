@@ -165,14 +165,13 @@ else:
         elif analysis_section == "Purchase Behavior":
             st.header("🛒 Purchase Behavior Analysis")
             purchase_counts = df['InGamePurchases'].value_counts()
-
             col1, col2 = st.columns(2)
-            col1.metric("Players with Purchases", purchase_counts.get('Yes',0))
-            col2.metric("Players without Purchases", purchase_counts.get('No',0))
-
+            col1.metric("Players with Purchases", purchase_counts.get(1, 0))
+            col2.metric("Players without Purchases", purchase_counts.get(0, 0))
             st.subheader("In-Game Purchases Distribution")
             fig, ax = plt.subplots()
             sns.countplot(data=df, x='InGamePurchases', palette='cool', ax=ax)
+            ax.set_xticklabels(['No Purchase', 'Purchase'])  # Label 0 and 1 meaningfully
             st.pyplot(fig)
 
         elif analysis_section == "Player Level & Progression":
