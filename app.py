@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
-import seaborn as sns
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Gaming Engagement Predictor & Analysis", layout="wide")
@@ -87,29 +86,45 @@ else:
 
     elif menu == "Analyze Dataset":
         st.title("📊 Online Gaming Behavior Dataset Analysis")
-        df = pd.read_csv("/mnt/data/online_gaming_behavior_dataset.csv")
+        uploaded_file = st.file_uploader("Upload your dataset CSV", type=["csv"])
 
-        st.subheader("Dataset Preview")
-        st.dataframe(df.head())
+        if uploaded_file is not None:
+            df = pd.read_csv(uploaded_file)
 
-        st.subheader("Basic Statistics")
-        st.dataframe(df.describe())
+            st.subheader("Dataset Preview")
+            st.dataframe(df.head())
 
-        st.subheader("Missing Values")
-        st.dataframe(df.isnull().sum())
+            st.subheader("Basic Statistics")
+            st.dataframe(df.describe())
 
-        st.subheader("Correlation Matrix")
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.heatmap(df.corr(), annot=True, cmap="coolwarm", ax=ax)
-        st.pyplot(fig)
+            st.subheader("Missing Values")
+            st.dataframe(df.isnull().sum())
 
-        st.subheader("Distribution of Engagement Levels")
-        if 'Engagement_Level' in df.columns:
-            fig2, ax2 = plt.subplots()
-            sns.countplot(x='Engagement_Level', data=df, palette='viridis', ax=ax2)
-            st.pyplot(fig2)
+            st.subheader("Correlation Matrix")
+            fig, ax = plt.subplots(figsize=(10, 6))
+            corr = df.corr(numeric_only=True)
+            im = ax.imshow(corr, cmap="coolwarm")
+            ax.set_xticks(np.arange(len(corr.columns)))
+            ax.set_yticks(np.arange(len(corr.columns)))
+            ax.set_xticklabels(corr.columns, rotation=45, ha="right")
+            ax.set_yticklabels(corr.columns)
+            fig.colorbar(im)
+            st.pyplot(fig)
 
-        st.subheader("Age Distribution")
-        fig3, ax3 = plt.subplots()
-        sns.histplot(df['Age'], bins=20, kde=True, ax=ax3)
-        st.pyplot(fig3)
+            if 'Engagement_Level' in df.columns:
+                st.subheader("Distribution of Engagement Levels")
+                fig2, ax2 = plt.subplots()
+                df['Engagement_Level'].value_counts().plot(kind='bar', color='teal', ax=ax2)
+                ax2.set_xlabel("Engagement Level")
+                ax2.set_ylabel("Count")
+                st.pyplot(fig2)
+
+            st.subheader("Age Distribution")
+            if 'Age' in df.columns:
+                fig3, ax3 = plt.subplots()
+                df['Age'].plot(kind='hist', bins=20, color='orange', edgecolor='black', ax=ax3)
+                ax3.set_xlabel("Age")
+                ax3.set_title("Age Distribution")
+                st.pyplot(fig3)
+        else:
+            st.warning("Please upload a CSV file to continue.")
