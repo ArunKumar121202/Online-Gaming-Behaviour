@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # Load your dataset
-df = pd.read_csv("/mnt/data/online_gaming_behavior_dataset.csv")
+df = pd.read_csv("online_gaming_behavior_dataset.csv")
 
 # Streamlit page settings
 st.set_page_config(page_title="Gaming Engagement Predictor & Insights", layout="wide")
