@@ -1,5 +1,3 @@
-# app.py
-
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -44,10 +42,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- LOAD DATA ---
-@st.cache_data
+@st.cache_resource
 def load_data():
-    df = pd.read_csv("online_gaming_behavior_dataset.csv")
-    return df
+    try:
+        df = pd.read_csv("online_gaming_behavior_dataset.csv")
+        return df
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
+        return pd.DataFrame()  # Return an empty DataFrame in case of error
 
 df = load_data()
 
@@ -68,9 +70,9 @@ st.markdown("---")
 # --- OVERVIEW SECTION ---
 if section == "Overview":
     total_players = df.shape[0]
-    avg_age = round(df['Age'].mean(), 2)
-    males = df[df['Gender'] == 'Male'].shape[0]
-    females = df[df['Gender'] == 'Female'].shape[0]
+    avg_age = round(df['Age'].mean(), 2) if 'Age' in df.columns else 0
+    males = df[df['Gender'] == 'Male'].shape[0] if 'Gender' in df.columns else 0
+    females = df[df['Gender'] == 'Female'].shape[0] if 'Gender' in df.columns else 0
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -99,9 +101,9 @@ if section == "Overview":
 elif section == "Player Demographics":
     st.markdown("## 🎮 Player Demographics")
 
-    fig_country = px.bar(df['Country'].value_counts().head(10).reset_index(),
-                         x='index', y='Country',
-                         title="Top 10 Countries", color='index', color_discrete_sequence=px.colors.qualitative.Bold)
+    fig_location = px.bar(df['Location'].value_counts().head(10).reset_index(),
+                         x='index', y='Location',
+                         title="Top 10 Locations", color='index', color_discrete_sequence=px.colors.qualitative.Bold)
 
     fig_age_gender = px.histogram(df, x="Age", color="Gender", barmode="overlay",
                                   title="Age Distribution by Gender",
@@ -109,7 +111,7 @@ elif section == "Player Demographics":
 
     col7, col8 = st.columns(2)
     with col7:
-        st.plotly_chart(fig_country, use_container_width=True)
+        st.plotly_chart(fig_location, use_container_width=True)
     with col8:
         st.plotly_chart(fig_age_gender, use_container_width=True)
 
@@ -117,15 +119,15 @@ elif section == "Player Demographics":
 elif section == "Player Activity":
     st.markdown("## 🕹 Player Activity")
 
-    fig_session = px.histogram(df, x="Session_Count", nbins=30, title="Session Count Distribution",
-                               color_discrete_sequence=["#ff7f0e"])
+    fig_sessions = px.histogram(df, x="SessionsPerWeek", nbins=30, title="Sessions Per Week Distribution",
+                                color_discrete_sequence=["#ff7f0e"])
 
     fig_hours = px.histogram(df, x="Hours_Played_Per_Week", nbins=30, title="Hours Played Per Week Distribution",
                              color_discrete_sequence=["#2ca02c"])
 
     col9, col10 = st.columns(2)
     with col9:
-        st.plotly_chart(fig_session, use_container_width=True)
+        st.plotly_chart(fig_sessions, use_container_width=True)
     with col10:
         st.plotly_chart(fig_hours, use_container_width=True)
 
@@ -139,4 +141,3 @@ elif section == "Spending Patterns":
         st.plotly_chart(fig_spending, use_container_width=True)
     else:
         st.warning("Spending Score data not available.")
-
