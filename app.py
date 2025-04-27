@@ -1,143 +1,131 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import numpy as np
+import matplotlib.pyplot as plt
 
-# --- PAGE CONFIG ---
-st.set_page_config(
-    page_title="Online Gaming Behavior Insights",
-    page_icon="🎮",
-    layout="wide",
-)
+st.set_page_config(page_title="Gaming Engagement Predictor & Analysis", layout="wide")
 
-# --- CUSTOM CSS for styling ---
+# Styling
 st.markdown("""
     <style>
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        color: white;
-    }
-    /* Main background */
-    .stApp {
-        background: linear-gradient(to right, #1f1c2c, #928DAB);
-        color: white;
-        font-family: 'Segoe UI', sans-serif;
-    }
-    /* Selectbox */
-    div[data-baseweb="select"] > div {
-        background-color: white;
-        border-radius: 8px;
-        padding: 8px;
-        color: black;
-    }
-    /* Metric cards */
-    .metric-card {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 12px;
-        padding: 20px;
-        text-align: center;
-        box-shadow: 0px 4px 12px rgba(0,0,0,0.4);
-    }
+    body {background-color: #0d47a1; color: white;}
+    .stApp {background-color: #0d47a1; color: white;}
+    .stTextInput label, .stNumberInput label, .stSelectbox label, .stRadio label, .st-bb, .st-cb {color: white !important;}
+    .stButton>button {background-color: white !important; color: #0d47a1 !important; font-weight: bold;}
+    .welcome-text {color: #ffeb3b; font-weight: bold; font-size: 18px;}
     </style>
 """, unsafe_allow_html=True)
 
-# --- LOAD DATA ---
-@st.cache_resource
-def load_data():
-    try:
-        df = pd.read_csv("online_gaming_behavior_dataset.csv")
-        return df
-    except Exception as e:
-        st.error(f"Error loading data: {e}")
-        return pd.DataFrame()  # Return an empty DataFrame in case of error
+st.title("📊 Online Gaming Behavior Dataset Analysis")
 
-df = load_data()
+uploaded_file = st.file_uploader("Upload your dataset CSV", type=["csv"])
 
-# --- SIDEBAR ---
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/747/747376.png", width=100)
-st.sidebar.title(f"👋 Welcome, Arun!")
-st.sidebar.markdown("### Choose Section")
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
 
-section = st.sidebar.selectbox(
-    "Go to",
-    ("Overview", "Player Demographics", "Player Activity", "Spending Patterns")
-)
+    st.subheader("Dataset Preview")
+    st.dataframe(df.head())
 
-# --- HEADER ---
-st.markdown("<h1 style='text-align: center;'>🎯 Online Gaming Behavior - Insights Dashboard 🎮</h1>", unsafe_allow_html=True)
-st.markdown("---")
+    st.subheader("Basic Statistics")
+    st.dataframe(df.describe())
 
-# --- OVERVIEW SECTION ---
-if section == "Overview":
-    total_players = df.shape[0]
-    avg_age = round(df['Age'].mean(), 2) if 'Age' in df.columns else 0
-    males = df[df['Gender'] == 'Male'].shape[0] if 'Gender' in df.columns else 0
-    females = df[df['Gender'] == 'Female'].shape[0] if 'Gender' in df.columns else 0
+    st.subheader("Missing Values")
+    st.dataframe(df.isnull().sum())
 
-    col1, col2, col3, col4 = st.columns(4)
+    st.subheader("🔗 Correlation Matrix")
+    fig_corr, ax_corr = plt.subplots(figsize=(10, 6))
+    corr = df.corr(numeric_only=True)
+    im = ax_corr.imshow(corr, cmap="coolwarm")
+    ax_corr.set_xticks(np.arange(len(corr.columns)))
+    ax_corr.set_yticks(np.arange(len(corr.columns)))
+    ax_corr.set_xticklabels(corr.columns, rotation=45, ha="right")
+    ax_corr.set_yticklabels(corr.columns)
+    fig_corr.colorbar(im)
+    st.pyplot(fig_corr)
+
+    # Now creating 2 charts side by side
+    st.markdown("## 🎮 Engagement Level & 🧑‍🤝‍🧑 Gender Distribution")
+
+    col1, col2 = st.columns(2)
+
     with col1:
-        st.markdown("<div class='metric-card'>👥<br><h3>Total Players</h3><h2>{}</h2></div>".format(total_players), unsafe_allow_html=True)
+        st.subheader("🎮 Engagement Level Distribution")
+        if 'Engagement_Level' in df.columns:
+            fig1, ax1 = plt.subplots()
+            engagement_counts = df['Engagement_Level'].value_counts().sort_index()
+            bars = ax1.bar(engagement_counts.index.astype(str), engagement_counts.values, color='cyan')
+            ax1.set_xlabel("Engagement Level")
+            ax1.set_ylabel("Count")
+            ax1.set_title("Engagement Level Distribution")
+
+            # Add value labels on bars
+            for bar in bars:
+                height = bar.get_height()
+                ax1.annotate('{}'.format(int(height)),
+                            xy=(bar.get_x() + bar.get_width() / 2, height),
+                            xytext=(0, 3),
+                            textcoords="offset points",
+                            ha='center', va='bottom', fontsize=8)
+            st.pyplot(fig1)
+        else:
+            st.warning("Engagement_Level column not found.")
+
     with col2:
-        st.markdown("<div class='metric-card'>🎂<br><h3>Average Age</h3><h2>{}</h2></div>".format(avg_age), unsafe_allow_html=True)
+        st.subheader("🧑‍🤝‍🧑 Gender Distribution")
+        if 'Gender' in df.columns:
+            fig2, ax2 = plt.subplots()
+            gender_counts = df['Gender'].value_counts()
+            bars2 = ax2.bar(gender_counts.index, gender_counts.values, color=['lightblue', 'salmon'])
+            ax2.set_xlabel("Gender")
+            ax2.set_ylabel("Count")
+            ax2.set_title("Gender Distribution")
+
+            for bar in bars2:
+                height = bar.get_height()
+                ax2.annotate('{}'.format(int(height)),
+                            xy=(bar.get_x() + bar.get_width() / 2, height),
+                            xytext=(0, 3),
+                            textcoords="offset points",
+                            ha='center', va='bottom', fontsize=8)
+            st.pyplot(fig2)
+        else:
+            st.warning("Gender column not found.")
+
+    # Another row
+    st.markdown("## 📌 Favorite Game Genre & 🌍 Player Location")
+
+    col3, col4 = st.columns(2)
+
     with col3:
-        st.markdown("<div class='metric-card'>♂️<br><h3>Males</h3><h2>{}</h2></div>".format(males), unsafe_allow_html=True)
+        st.subheader("📌 Favorite Game Genre")
+        if 'Favorite_Game_Genre' in df.columns:
+            fig3, ax3 = plt.subplots()
+            genre_counts = df['Favorite_Game_Genre'].value_counts()
+            bars3 = ax3.barh(genre_counts.index, genre_counts.values, color='violet')
+            ax3.set_xlabel("Count")
+            ax3.set_title("Favorite Game Genre")
+
+            for bar in bars3:
+                width = bar.get_width()
+                ax3.annotate('{}'.format(int(width)),
+                            xy=(width, bar.get_y() + bar.get_height() / 2),
+                            xytext=(3, 0),
+                            textcoords="offset points",
+                            ha='left', va='center', fontsize=8)
+            st.pyplot(fig3)
+        else:
+            st.warning("Favorite_Game_Genre column not found.")
+
     with col4:
-        st.markdown("<div class='metric-card'>♀️<br><h3>Females</h3><h2>{}</h2></div>".format(females), unsafe_allow_html=True)
+        st.subheader("🌍 Player Location")
+        if 'Player_Location' in df.columns:
+            fig4, ax4 = plt.subplots()
+            location_counts = df['Player_Location'].value_counts()
+            ax4.pie(location_counts.values, labels=location_counts.index, autopct='%1.1f%%', startangle=90, colors=plt.cm.Pastel1.colors)
+            ax4.set_title("Player Location Distribution")
+            st.pyplot(fig4)
+        else:
+            st.warning("Player_Location column not found.")
 
-    st.markdown("## ")
-    st.markdown("### 📊 Summary Plots")
-
-    fig_age = px.histogram(df, x="Age", nbins=30, title="Age Distribution", color_discrete_sequence=["#00BFFF"])
-    fig_gender = px.bar(df['Gender'].value_counts().reset_index(), x='index', y='Gender',
-                        title="Gender Distribution", color='index', color_discrete_sequence=px.colors.qualitative.Pastel)
-
-    col5, col6 = st.columns(2)
-    with col5:
-        st.plotly_chart(fig_age, use_container_width=True)
-    with col6:
-        st.plotly_chart(fig_gender, use_container_width=True)
-
-# --- PLAYER DEMOGRAPHICS ---
-elif section == "Player Demographics":
-    st.markdown("## 🎮 Player Demographics")
-
-    fig_location = px.bar(df['Location'].value_counts().head(10).reset_index(),
-                         x='index', y='Location',
-                         title="Top 10 Locations", color='index', color_discrete_sequence=px.colors.qualitative.Bold)
-
-    fig_age_gender = px.histogram(df, x="Age", color="Gender", barmode="overlay",
-                                  title="Age Distribution by Gender",
-                                  color_discrete_sequence=["#6a0dad", "#ff69b4"])
-
-    col7, col8 = st.columns(2)
-    with col7:
-        st.plotly_chart(fig_location, use_container_width=True)
-    with col8:
-        st.plotly_chart(fig_age_gender, use_container_width=True)
-
-# --- PLAYER ACTIVITY ---
-elif section == "Player Activity":
-    st.markdown("## 🕹 Player Activity")
-
-    fig_sessions = px.histogram(df, x="SessionsPerWeek", nbins=30, title="Sessions Per Week Distribution",
-                                color_discrete_sequence=["#ff7f0e"])
-
-    fig_hours = px.histogram(df, x="Hours_Played_Per_Week", nbins=30, title="Hours Played Per Week Distribution",
-                             color_discrete_sequence=["#2ca02c"])
-
-    col9, col10 = st.columns(2)
-    with col9:
-        st.plotly_chart(fig_sessions, use_container_width=True)
-    with col10:
-        st.plotly_chart(fig_hours, use_container_width=True)
-
-# --- SPENDING PATTERNS ---
-elif section == "Spending Patterns":
-    st.markdown("## 💰 Spending Patterns")
-
-    if 'Spending_Score' in df.columns:
-        fig_spending = px.histogram(df, x="Spending_Score", nbins=30, title="Spending Score Distribution",
-                                    color_discrete_sequence=["#d62728"])
-        st.plotly_chart(fig_spending, use_container_width=True)
-    else:
-        st.warning("Spending Score data not available.")
+else:
+    st.warning("Please upload a CSV file to continue.")
