@@ -116,10 +116,10 @@ else:
 
         with col1:
             st.markdown("#### 🎮 Engagement Level Distribution")
-            if 'Engagement_Level' in df.columns:
+            if 'EngagementLevel' in df.columns:
                 fig, ax = plt.subplots()
-                order = df['Engagement_Level'].value_counts().index
-                sns.countplot(data=df, x='Engagement_Level', order=order, palette='Blues', ax=ax)
+                order = df['EngagementLevel'].value_counts().index
+                sns.countplot(data=df, x='EngagementLevel', order=order, palette='Blues', ax=ax)
                 for p in ax.patches:
                     ax.annotate(f"{p.get_height()}", (p.get_x() + p.get_width() / 2., p.get_height()), 
                                 ha='center', va='center', fontsize=10, color='black', xytext=(0, 8),
@@ -143,8 +143,8 @@ else:
 
         with col3:
             st.markdown("#### 🕹️ Favorite Game Genre")
-            if 'Game_Genre' in df.columns:
-                genre_counts = df['Game_Genre'].value_counts()
+            if 'GameGenre' in df.columns:
+                genre_counts = df['GameGenre'].value_counts()
                 fig, ax = plt.subplots()
                 genre_counts.plot(kind='bar', color='mediumseagreen', edgecolor='black', ax=ax)
                 for i, v in enumerate(genre_counts):
