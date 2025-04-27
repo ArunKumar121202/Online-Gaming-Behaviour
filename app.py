@@ -41,7 +41,7 @@ if "logged_in" not in st.session_state:
 if not st.session_state["logged_in"]:
     login()
 else:
-    menu = st.sidebar.selectbox("Choose Section", ["Predict Engagement", "Analyze Dataset"])
+    menu = st.sidebar.radio("Choose Section", ["Predict Engagement", "Analyze Dataset"])
 
     if menu == "Predict Engagement":
         model = joblib.load("engagement_model.pkl")
@@ -111,8 +111,8 @@ else:
         fig.colorbar(im)
         st.pyplot(fig)
 
-        # Side-by-side charts
-        col1, col2 = st.columns(2)
+        # Side-by-side charts with better alignment
+        col1, col2 = st.columns([2, 2])  # Equal column width for both charts
 
         with col1:
             st.markdown("#### 🎮 Engagement Level Distribution")
@@ -139,7 +139,7 @@ else:
                 ax.set_ylabel("Count")
                 st.pyplot(fig)
 
-        col3, col4 = st.columns(2)
+        col3, col4 = st.columns([2, 2])  # Equal column width for both charts
 
         with col3:
             st.markdown("#### 🕹️ Favorite Game Genre")
