@@ -8,6 +8,18 @@ import seaborn as sns
 # Load your dataset
 df = pd.read_csv("online_gaming_behavior_dataset.csv")
 
+# Rename columns for better readability
+df.rename(columns={
+    'Play TimeHours': 'PlayTimeHours',
+    'InGamePurchases': 'InGamePurchases',
+    'Game_Difficulty': 'GameDifficulty',
+    'SessionsPerWeek': 'SessionsPerWeek',
+    'AvgSessionDuration': 'AvgSessionDuration',
+    'PlayerLevel': 'PlayerLevel',
+    'AchievementsUnlocked': 'AchievementsUnlocked',
+    'EngagementLevel': 'EngagementLevel'
+}, inplace=True)
+
 # Streamlit page settings
 st.set_page_config(page_title="Gaming Engagement Predictor & Insights", layout="wide")
 
@@ -102,7 +114,7 @@ else:
             genre_sports = 1 if game_genre == "Sports" else 0
             genre_strategy = 1 if game_genre == "Strategy" else 0
 
-            input_data = np.array([[
+            input_data = np.array([[ 
                 age, gender_encoded, play_time, 1 if in_game_purchases == "Yes" else 0,
                 game_difficulty_encoded, sessions_per_week, avg_session_duration, player_level, achievements,
                 location_europe, location_other, location_usa,
@@ -134,7 +146,7 @@ else:
         st.divider()
 
         st.subheader("1️⃣ Player Demographics")
-        fig, ax = plt.subplots(1,2, figsize=(16,6))
+        fig, ax = plt.subplots(1, 2, figsize=(16, 6))
         sns.histplot(df['Age'], kde=True, color='cyan', ax=ax[0])
         ax[0].set_title("Age Distribution")
         sns.countplot(data=df, x='Gender', palette='pastel', ax=ax[1])
@@ -144,10 +156,10 @@ else:
         st.divider()
 
         st.subheader("2️⃣ Gameplay Behavior")
-        fig, ax = plt.subplots(1,2, figsize=(16,6))
-        sns.histplot(df['Play TimeHours'], kde=True, color='lightgreen', ax=ax[0])
+        fig, ax = plt.subplots(1, 2, figsize=(16, 6))
+        sns.histplot(df['PlayTimeHours'], kde=True, color='lightgreen', ax=ax[0])
         ax[0].set_title("Play Time Distribution")
-        sns.countplot(data=df, x='Game_Difficulty', palette='muted', ax=ax[1])
+        sns.countplot(data=df, x='GameDifficulty', palette='muted', ax=ax[1])
         ax[1].set_title("Game Difficulty Levels")
         st.pyplot(fig)
 
@@ -157,7 +169,7 @@ else:
         engagement_mapping = {1: "Low", 2: "Medium", 3: "High"}
         df['EngagementLevel_label'] = df['EngagementLevel'].map(engagement_mapping)
 
-        fig, ax = plt.subplots(figsize=(10,6))
+        fig, ax = plt.subplots(figsize=(10, 6))
         sns.countplot(data=df, x='EngagementLevel_label', palette='cool', order=["Low", "Medium", "High"], ax=ax)
         ax.set_title("Player Engagement Levels")
         st.pyplot(fig)
@@ -165,7 +177,7 @@ else:
         st.divider()
 
         st.subheader("4️⃣ Purchase Behavior")
-        fig, ax = plt.subplots(figsize=(10,6))
+        fig, ax = plt.subplots(figsize=(10, 6))
         sns.countplot(data=df, x='InGamePurchases', palette='rocket', ax=ax)
         ax.set_xticklabels(['No', 'Yes'])
         ax.set_title("In-Game Purchase Behavior")
@@ -174,7 +186,7 @@ else:
         st.divider()
 
         st.subheader("5️⃣ Player Progression")
-        fig, ax = plt.subplots(figsize=(10,6))
+        fig, ax = plt.subplots(figsize=(10, 6))
         sns.histplot(df['PlayerLevel'], kde=True, color='gold', ax=ax)
         ax.set_title("Player Level Distribution")
         st.pyplot(fig)
@@ -182,7 +194,7 @@ else:
         st.divider()
 
         st.subheader("6️⃣ Location Based Insights")
-        fig, ax = plt.subplots(figsize=(8,8))
+        fig, ax = plt.subplots(figsize=(8, 8))
         location_counts = df['Location'].value_counts()
         ax.pie(location_counts, labels=location_counts.index, autopct='%1.1f%%', startangle=90, colors=sns.color_palette('Set3'))
         ax.axis('equal')
