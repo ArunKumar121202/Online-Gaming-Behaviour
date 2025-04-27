@@ -34,6 +34,11 @@ def login():
         else:
             st.error("Invalid username or password")
 
+def logout():
+    st.session_state["logged_in"] = False
+    st.session_state["username"] = ""
+    st.success("You have been logged out")
+
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
@@ -41,6 +46,10 @@ if not st.session_state["logged_in"]:
     login()
 else:
     st.title("🎮 Engagement Level Predictor")
+
+    # Logout Button
+    if st.button("Logout"):
+        logout()
 
     model = joblib.load("engagement_model.pkl")
     scaler = joblib.load("scaler.pkl")
