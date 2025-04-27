@@ -1,12 +1,14 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import joblib
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 st.set_page_config(page_title="Gaming Engagement Predictor & Analysis", layout="wide")
 
-# Styling
-st.markdown("""
+st.markdown(
+    """
     <style>
     body {background-color: #0d47a1; color: white;}
     .stApp {background-color: #0d47a1; color: white;}
@@ -14,118 +16,148 @@ st.markdown("""
     .stButton>button {background-color: white !important; color: #0d47a1 !important; font-weight: bold;}
     .welcome-text {color: #ffeb3b; font-weight: bold; font-size: 18px;}
     </style>
-""", unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True
+)
 
-st.title("📊 Online Gaming Behavior Dataset Analysis")
+USER_CREDENTIALS = {"Arun": "Loginpage@123"}
 
-uploaded_file = st.file_uploader("Upload your dataset CSV", type=["csv"])
-
-if uploaded_file is not None:
-    df = pd.read_csv(uploaded_file)
-
-    st.subheader("Dataset Preview")
-    st.dataframe(df.head())
-
-    st.subheader("Basic Statistics")
-    st.dataframe(df.describe())
-
-    st.subheader("Missing Values")
-    st.dataframe(df.isnull().sum())
-
-    st.subheader("🔗 Correlation Matrix")
-    fig_corr, ax_corr = plt.subplots(figsize=(10, 6))
-    corr = df.corr(numeric_only=True)
-    im = ax_corr.imshow(corr, cmap="coolwarm")
-    ax_corr.set_xticks(np.arange(len(corr.columns)))
-    ax_corr.set_yticks(np.arange(len(corr.columns)))
-    ax_corr.set_xticklabels(corr.columns, rotation=45, ha="right")
-    ax_corr.set_yticklabels(corr.columns)
-    fig_corr.colorbar(im)
-    st.pyplot(fig_corr)
-
-    # Now creating 2 charts side by side
-    st.markdown("## 🎮 Engagement Level & 🧑‍🤝‍🧑 Gender Distribution")
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("🎮 Engagement Level Distribution")
-        if 'Engagement_Level' in df.columns:
-            fig1, ax1 = plt.subplots()
-            engagement_counts = df['Engagement_Level'].value_counts().sort_index()
-            bars = ax1.bar(engagement_counts.index.astype(str), engagement_counts.values, color='cyan')
-            ax1.set_xlabel("Engagement Level")
-            ax1.set_ylabel("Count")
-            ax1.set_title("Engagement Level Distribution")
-
-            # Add value labels on bars
-            for bar in bars:
-                height = bar.get_height()
-                ax1.annotate('{}'.format(int(height)),
-                            xy=(bar.get_x() + bar.get_width() / 2, height),
-                            xytext=(0, 3),
-                            textcoords="offset points",
-                            ha='center', va='bottom', fontsize=8)
-            st.pyplot(fig1)
+def login():
+    st.title("🔐 Login to Access the App")
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    login_button = st.button("Login")
+    if login_button:
+        if username in USER_CREDENTIALS and USER_CREDENTIALS[username] == password:
+            st.session_state["logged_in"] = True
+            st.session_state["username"] = username
+            st.success(f"✅ Welcome, {username}!")
         else:
-            st.warning("Engagement_Level column not found.")
+            st.error("Invalid username or password")
 
-    with col2:
-        st.subheader("🧑‍🤝‍🧑 Gender Distribution")
-        if 'Gender' in df.columns:
-            fig2, ax2 = plt.subplots()
-            gender_counts = df['Gender'].value_counts()
-            bars2 = ax2.bar(gender_counts.index, gender_counts.values, color=['lightblue', 'salmon'])
-            ax2.set_xlabel("Gender")
-            ax2.set_ylabel("Count")
-            ax2.set_title("Gender Distribution")
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
 
-            for bar in bars2:
-                height = bar.get_height()
-                ax2.annotate('{}'.format(int(height)),
-                            xy=(bar.get_x() + bar.get_width() / 2, height),
-                            xytext=(0, 3),
-                            textcoords="offset points",
-                            ha='center', va='bottom', fontsize=8)
-            st.pyplot(fig2)
-        else:
-            st.warning("Gender column not found.")
-
-    # Another row
-    st.markdown("## 📌 Favorite Game Genre & 🌍 Player Location")
-
-    col3, col4 = st.columns(2)
-
-    with col3:
-        st.subheader("📌 Favorite Game Genre")
-        if 'Favorite_Game_Genre' in df.columns:
-            fig3, ax3 = plt.subplots()
-            genre_counts = df['Favorite_Game_Genre'].value_counts()
-            bars3 = ax3.barh(genre_counts.index, genre_counts.values, color='violet')
-            ax3.set_xlabel("Count")
-            ax3.set_title("Favorite Game Genre")
-
-            for bar in bars3:
-                width = bar.get_width()
-                ax3.annotate('{}'.format(int(width)),
-                            xy=(width, bar.get_y() + bar.get_height() / 2),
-                            xytext=(3, 0),
-                            textcoords="offset points",
-                            ha='left', va='center', fontsize=8)
-            st.pyplot(fig3)
-        else:
-            st.warning("Favorite_Game_Genre column not found.")
-
-    with col4:
-        st.subheader("🌍 Player Location")
-        if 'Player_Location' in df.columns:
-            fig4, ax4 = plt.subplots()
-            location_counts = df['Player_Location'].value_counts()
-            ax4.pie(location_counts.values, labels=location_counts.index, autopct='%1.1f%%', startangle=90, colors=plt.cm.Pastel1.colors)
-            ax4.set_title("Player Location Distribution")
-            st.pyplot(fig4)
-        else:
-            st.warning("Player_Location column not found.")
-
+if not st.session_state["logged_in"]:
+    login()
 else:
-    st.warning("Please upload a CSV file to continue.")
+    menu = st.sidebar.selectbox("Choose Section", ["Predict Engagement", "Analyze Dataset"])
+
+    if menu == "Predict Engagement":
+        model = joblib.load("engagement_model.pkl")
+        scaler = joblib.load("scaler.pkl")
+
+        st.title("🎮 Engagement Level Predictor")
+        age = st.number_input("Age", min_value=15, max_value=49, step=1)
+        gender = st.selectbox("Gender", ["Male", "Female"])
+        location = st.selectbox("Player Location", ["Europe", "Other", "USA"])
+        game_genre = st.selectbox("Favorite Game Genre", ["Action", "Adventure", "Puzzle", "RPG", "Simulation", "Sports", "Strategy", "Other"])
+        play_time = st.number_input("Average Play Time (Hours)", min_value=0.0, step=0.5)
+        in_game_purchases = st.radio("In-Game Purchases", ["No", "Yes"])
+        game_difficulty = st.selectbox("Game Difficulty", ["Easy", "Medium", "Hard"])
+        sessions_per_week = st.number_input("Sessions per Week", min_value=0, step=1)
+        avg_session_duration = st.number_input("Avg. Session Duration (minutes)", min_value=0, step=1)
+        player_level = st.number_input("Player Level", min_value=0, step=1)
+        achievements = st.number_input("Achievements Unlocked", min_value=0, step=1)
+
+        gender_encoded = 0 if gender == "Male" else 1
+        difficulty_map = {'Easy': 1, 'Medium': 2, 'Hard': 3}
+        game_difficulty_encoded = difficulty_map[game_difficulty]
+        location_europe = 1 if location == "Europe" else 0
+        location_other = 1 if location == "Other" else 0
+        location_usa = 1 if location == "USA" else 0
+        genre_rpg = 1 if game_genre == "RPG" else 0
+        genre_simulation = 1 if game_genre == "Simulation" else 0
+        genre_sports = 1 if game_genre == "Sports" else 0
+        genre_strategy = 1 if game_genre == "Strategy" else 0
+
+        input_data = np.array([[ 
+            age, gender_encoded, play_time, 1 if in_game_purchases == "Yes" else 0,
+            game_difficulty_encoded, sessions_per_week, avg_session_duration, player_level, achievements,
+            location_europe, location_other, location_usa,
+            genre_rpg, genre_simulation, genre_sports, genre_strategy
+        ]])
+
+        if st.button("Predict Engagement Level"):
+            scaled_input = scaler.transform(input_data)
+            prediction = model.predict(scaled_input)
+            prediction_value = int(prediction.item())
+            engagement_labels = {1: "Low", 2: "Medium", 3: "High"}
+            st.success(f"🎯 Predicted Engagement Level: **{engagement_labels.get(prediction_value, 'Unknown')}**")
+
+    elif menu == "Analyze Dataset":
+        st.title("📊 Online Gaming Behavior Dataset Analysis")
+        
+        # Load the dataset directly from a file
+        df = pd.read_csv("online_gaming_behavior_dataset.csv")
+
+        st.subheader("Dataset Preview")
+        st.dataframe(df.head())
+
+        st.subheader("Basic Statistics")
+        st.dataframe(df.describe())
+
+        st.subheader("Missing Values")
+        st.dataframe(df.isnull().sum())
+
+        st.subheader("Correlation Matrix")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        corr = df.corr(numeric_only=True)
+        im = ax.imshow(corr, cmap="coolwarm")
+        ax.set_xticks(np.arange(len(corr.columns)))
+        ax.set_yticks(np.arange(len(corr.columns)))
+        ax.set_xticklabels(corr.columns, rotation=45, ha="right")
+        ax.set_yticklabels(corr.columns)
+        fig.colorbar(im)
+        st.pyplot(fig)
+
+        # Side-by-side charts
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### 🎮 Engagement Level Distribution")
+            if 'Engagement_Level' in df.columns:
+                fig, ax = plt.subplots()
+                order = df['Engagement_Level'].value_counts().index
+                sns.countplot(data=df, x='Engagement_Level', order=order, palette='Blues', ax=ax)
+                for p in ax.patches:
+                    ax.annotate(f"{p.get_height()}", (p.get_x() + p.get_width() / 2., p.get_height()), 
+                                ha='center', va='center', fontsize=10, color='black', xytext=(0, 8),
+                                textcoords='offset points')
+                ax.set_ylabel("Count")
+                st.pyplot(fig)
+
+        with col2:
+            st.markdown("#### 👤 Gender Distribution")
+            if 'Gender' in df.columns:
+                fig, ax = plt.subplots()
+                sns.countplot(data=df, x='Gender', palette='Set2', ax=ax)
+                for p in ax.patches:
+                    ax.annotate(f"{p.get_height()}", (p.get_x() + p.get_width() / 2., p.get_height()), 
+                                ha='center', va='center', fontsize=10, color='black', xytext=(0, 8),
+                                textcoords='offset points')
+                ax.set_ylabel("Count")
+                st.pyplot(fig)
+
+        col3, col4 = st.columns(2)
+
+        with col3:
+            st.markdown("#### 🕹️ Favorite Game Genre")
+            if 'Game_Genre' in df.columns:
+                genre_counts = df['Game_Genre'].value_counts()
+                fig, ax = plt.subplots()
+                genre_counts.plot(kind='bar', color='mediumseagreen', edgecolor='black', ax=ax)
+                for i, v in enumerate(genre_counts):
+                    ax.text(i, v + 1, str(v), ha='center')
+                ax.set_xlabel("Game Genre")
+                ax.set_ylabel("Count")
+                st.pyplot(fig)
+
+        with col4:
+            st.markdown("#### 🌍 Player Location")
+            if 'Location' in df.columns:
+                location_counts = df['Location'].value_counts()
+                fig, ax = plt.subplots()
+                ax.pie(location_counts, labels=location_counts.index, autopct='%1.1f%%', startangle=140, colors=sns.color_palette("pastel"))
+                ax.axis('equal')
+                st.pyplot(fig)
